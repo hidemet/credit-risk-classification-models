@@ -37,18 +37,3 @@ Questo studio dimostra la capacità di applicare un processo metodico per risolv
     *   **NumPy:** Per le operazioni numeriche.
     *   **Scikit-learn:** Per l'implementazione dei modelli di ML, il preprocessing e la valutazione.
     *   **Matplotlib & Seaborn:** Per la visualizzazione dei dati e dei risultati.
-
-## 🚀 Come Eseguire l'Analisi
-
-1.  **Clonare il repository:**
-    ```bash
-    git clone https://github.com/hidemet/Credit-Risk-Classification-Models.git
-    cd Credit-Risk-Classification-Models
-    ```
-2.  **Installare le dipendenze:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-    *(Nota: sarà necessario creare un file `requirements.txt` con le librerie usate. Vedi sotto.)*
-
-3.  **Eseguire il Notebook:** Aprire e runnare il file `credit_risk_analysis.ipynb` in un ambiente Jupyter (come Jupyter Lab, Jupyter Notebook o VS Code con l'estensione Python).
