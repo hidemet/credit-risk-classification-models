@@ -1,6 +1,4 @@
 # CreditRisk Sentinel
-
-## Title & Elevator Pitch
 CreditRisk Sentinel is a practical proof-of-concept for credit default classification on imbalanced tabular data.
 It benchmarks multiple ML families, applies class-imbalance strategies, and optimizes for high-risk applicant detection quality (the `bad` class) instead of relying on accuracy alone.
 
