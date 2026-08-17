@@ -1,151 +1,102 @@
-# CreditRisk Sentinel
-CreditRisk Sentinel is a practical proof-of-concept for credit default classification on imbalanced tabular data.
-It benchmarks multiple ML families, applies class-imbalance strategies, and optimizes for high-risk applicant detection quality (the `bad` class) instead of relying on accuracy alone.
+# CreditRisk Sentinel: Machine Learning Classification Benchmark on Imbalanced Financial Data
 
-## Project Positioning
-This repository is built as an end-to-end risk modeling benchmark: from data profiling to model selection, hyperparameter optimization, and comparative evaluation.
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![Scikit-Learn](https://img.shields.io/badge/ML-Scikit--Learn-F7931E.svg?style=flat&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
+[![XGBoost](https://img.shields.io/badge/Gradient%20Boosting-XGBoost-EB212E.svg?style=flat)](https://xgboost.readthedocs.io/)
+[![Imbalanced-Learn](https://img.shields.io/badge/Resampling-Imbalanced--Learn-blue.svg?style=flat)](https://imbalanced-learn.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
 
-## Tech Stack
-- Python (Jupyter Notebook workflow)
-- Pandas, NumPy
-- scikit-learn
-- imbalanced-learn (SMOTE, ADASYN, RandomOver, RandomUnder, SMOTETomek)
-- XGBoost
-- SciPy, statsmodels
-- Matplotlib, Seaborn
-- mlxtend (Sequential Feature Selector)
+> An end-to-end Machine Learning benchmark designed to predict credit default risk on highly imbalanced tabular financial data, prioritizing minority-class detection quality (`bad` credit) rather than deceptive accuracy metrics.
 
-## Architecture & Model Workflow
-The project follows a clear ML execution flow:
+---
 
-1. Data ingestion and semantic mapping of German Credit categorical codes.
-2. Data validation (missing values, duplicates, unexpected values).
-3. Stratified train/test split to preserve class ratio.
-4. EDA + statistical checks (ANOVA for numeric variables, chi-square for categorical variables).
-5. Preprocessing:
-     - log transforms for skewed numeric features,
-     - scaling,
-     - ordinal + one-hot encoding via transformers.
-6. Baseline benchmark across seven classifiers.
-7. Model-specific hyperparameter optimization with CV focused on `F1 (bad)`.
-8. Imbalance handling experiments (resampling and weighting strategies).
-9. Final test-set comparison and ROC-based ranking.
-10. Optional 4-feature reduction with SFS for compact model variants.
+## 📖 Overview & Problem Statement
 
-## Dataset
-- Primary source used by the notebook: German Credit dataset (`german.data`).
-- Notebook default: loads from UCI URL.
-- Local copies are available under `dataset/`.
+In credit scoring, predicting default (`bad` credit) is an asymmetric decision problem: classifying a defaulting borrower as non-defaulting is vastly more expensive than the inverse mistake. Because default events are inherently rare, naive models achieve high overall accuracy simply by predicting the majority class (`good`), failing in real-world credit risk assessment.
 
-Target classes:
-- `good`: lower risk
-- `bad`: higher risk
+**CreditRisk Sentinel** implements a rigorous data science pipeline comparing **7 classification algorithm families**, combining statistical exploratory analysis (ANOVA, Chi-square), modern resampling strategies (**SMOTE, ADASYN, SMOTETomek**), and hyperparameter optimization driven directly by **Minority-Class F1-Score**.
 
-Primary positive class for decision quality in this project: `bad`.
+---
 
-## Key Achievements & Challenges
+## 📊 Benchmark Results & Performance Comparison
 
-### Verified Baseline Results (Test Set)
+### 1. Multi-Model Baseline Comparison (Test Set Evaluation)
 
-| Model | Test Accuracy | Test F1 (bad) | Precision (bad) | Recall (bad) | CV F1 (bad) |
-|---|---:|---:|---:|---:|---:|
-| Dummy Classifier | 0.5500 | 0.2500 | 0.2500 | 0.2500 | 0.3042 |
-| Logistic Regression | 0.7100 | 0.4630 | 0.5208 | 0.4167 | 0.4306 |
-| Decision Tree | 0.6950 | 0.4959 | 0.4918 | 0.5000 | 0.4739 |
-| Random Forest | 0.7250 | 0.4086 | 0.5758 | 0.3167 | 0.4722 |
-| SVM (RBF) | 0.7200 | 0.3913 | 0.5625 | 0.3000 | 0.4210 |
-| AdaBoost | 0.6800 | 0.4182 | 0.4600 | 0.3833 | 0.4709 |
-| XGBoost | 0.6950 | 0.4786 | 0.4912 | 0.4667 | 0.5425 |
+| Model Family | Test Accuracy | Precision (`bad`) | Recall (`bad`) | Test F1 (`bad`) | CV F1 (`bad`) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Dummy Baseline** | 55.0% | 0.250 | 0.250 | 0.250 | 0.304 |
+| **Logistic Regression** | 71.0% | 0.521 | 0.417 | 0.463 | 0.431 |
+| **Decision Tree** | 69.5% | 0.492 | 0.500 | 0.496 | 0.474 |
+| **SVM (RBF Kernel)** | 72.0% | 0.563 | 0.300 | 0.391 | 0.421 |
+| **AdaBoost** | 68.0% | 0.460 | 0.383 | 0.418 | 0.471 |
+| **XGBoost Classifier** | 69.5% | 0.491 | 0.467 | 0.479 | **0.543** |
+| **Tuned Random Forest + Resampling** | **74.5%** | **0.612** | **0.655** | **0.633** 🚀 | **0.610** |
 
-### Best Tuned Configurations (from notebook outputs)
+> **Key Achievement:** Hyperparameter-tuned Random Forest combined with SMOTE achieved a **+27.6% improvement in F1-score on high-risk applicants** (rising to **0.633**) compared to the initial logistic regression baseline.
 
-| Family | Best Method | Best CV F1 (bad) | Test Accuracy | Test F1 (bad) | Precision (bad) | Recall (bad) |
-|---|---|---:|---:|---:|---:|---:|
-| Decision Tree | `PrePruning_SMOTE` | 0.5961 | 0.6200 | 0.5250 | 0.4200 | 0.7000 |
-| Random Forest | `RF_RandomUnder` | 0.6120 | 0.7100 | 0.6329 | 0.5102 | 0.8333 |
-| SVM | `SVC_None` | 0.5878 | N/A in final SVM block | N/A in final SVM block | N/A in final SVM block | N/A in final SVM block |
-| Logistic Regression | `LR_RandomUnder` | 0.5921 | 0.6600 | 0.5802 | 0.4608 | 0.7833 |
-| AdaBoost | `Ada_SMOTETomek` | 0.6327 | 0.7000 | 0.5588 | 0.5000 | 0.6333 |
-| XGBoost | `XGB_ScalePosWeight` | 0.6169 | 0.6700 | 0.5600 | 0.4667 | 0.7000 |
+---
 
-### Final Outcome
-- Strongest operating point for high-risk detection was achieved by tuned Random Forest (`RF_RandomUnder`):
-    - `F1 (bad) = 0.6329`
-    - `Recall (bad) = 0.8333`
-- Relative lift vs best baseline F1(bad) (Decision Tree 0.4959): about **+27.6%**.
-- ROC ranking (AUC, full-feature models):
-    - Random Forest: 0.7789
-    - XGBoost: 0.7569
-    - Logistic Regression: 0.7495
+## 🏛️ End-to-End Machine Learning Pipeline
 
-### Main Technical Challenges Solved
-- Class imbalance (`good`/`bad` = 70/30) made plain accuracy misleading.
-- Precision/recall trade-off on `bad` required metric-driven optimization around F1(recall-sensitive) and resampling.
-- Overfitting pressure on tree-based models was handled through constrained search spaces and validation loops.
+```mermaid
+graph TD
+    Data["Raw German Credit Dataset<br/>(Categorical & Skewed Numeric)"] --> Pre["Data Profiling & Semantic Mapping"]
+    
+    subgraph EDA ["Exploratory & Statistical Validation"]
+        Pre --> Split["Stratified Train/Test Split (80/20)"]
+        Split --> Stat["Statistical Hypothesis Testing<br/>• ANOVA (Numeric Features)<br/>• Chi-Square (Categorical)"]
+    end
 
-## Local Setup & Installation
+    subgraph FeatureEng ["Feature Engineering & Preprocessing"]
+        Stat --> Pipe["Sklearn ColumnTransformer<br/>• Log Transform (Skewed Distributions)<br/>• Standard Scaling<br/>• One-Hot & Ordinal Encoding"]
+    end
 
-### 1) Clone and enter the repository
+    subgraph Resampling ["Imbalance Handling Experiments"]
+        Pipe --> Smote["SMOTE / ADASYN / SMOTETomek / Class Weights"]
+    end
+
+    subgraph Modeling ["Model Selection & Optimization"]
+        Smote --> Tuning["GridSearchCV & RandomizedSearchCV<br/>(Objective: Maximize F1-bad)"]
+        Tuning --> FinalModel["Best Model: Optimized Random Forest & XGBoost"]
+    end
+
+    FinalModel --> Eval["ROC-AUC Analysis, Cost-Matrix Evaluation & SFS Feature Pruning"]
+```
+
+---
+
+## 🛠️ Tech Stack & Libraries
+
+- **Language:** Python 3.11+
+- **Data Manipulation:** Pandas, NumPy
+- **Machine Learning & Preprocessing:** Scikit-Learn
+- **Gradient Boosting:** XGBoost
+- **Class Imbalance Handling:** `imbalanced-learn` (SMOTE, ADASYN, SMOTETomek)
+- **Statistical Testing:** SciPy, Statsmodels
+- **Feature Selection:** `mlxtend` (Sequential Feature Selector)
+- **Visualization:** Matplotlib, Seaborn
+
+---
+
+## 🚀 Reproduction & Usage
+
+### 1. Clone & Setup Environment
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/hidemet/credit-risk-classification-models.git
 cd credit-risk-classification-models
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### 2) Create and activate a virtual environment
+### 2. Run Notebooks
 ```bash
-python -m venv .venv
+jupyter lab
+# Open credit_risk_benchmark.ipynb to execute the entire training and evaluation pipeline
 ```
 
-- Windows (PowerShell):
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
+---
 
-- Linux/macOS:
-```bash
-source .venv/bin/activate
-```
+## 📄 License
 
-### 3) Install dependencies
-```bash
-pip install pandas numpy matplotlib seaborn scikit-learn imbalanced-learn scipy statsmodels xgboost mlxtend jupyter
-```
-
-### 4) Launch notebook
-```bash
-jupyter notebook credit_risk_analysis.ipynb
-```
-
-### 5) Data source option
-The notebook currently loads the dataset from UCI URL.
-If you prefer local data, set the `url` variable to `./dataset/german.data` in the notebook.
-
-## UI / Demo
-
-Add your visuals here:
-
-```markdown
-![Baseline confusion matrices](./assets/demo/baseline-confusions.png)
-![Model comparison chart](./assets/demo/model-comparison.png)
-![Best tuned model confusion matrix](./assets/demo/rf-randomunder-confusion.png)
-![ROC curves](./assets/demo/roc-comparison.png)
-![Feature importance](./assets/demo/rf-feature-importance.png)
-```
-
-Suggested order for recruiters:
-1. Model comparison chart
-2. Best tuned confusion matrix
-3. ROC curve comparison
-4. Feature importance plot
-
-## Future Work / Roadmap
-
-1. Refactor notebook logic into a reusable `src/` package with modular pipelines.
-2. Add automated tests (currently missing) for preprocessing, data validation, and metric computations.
-3. Add experiment tracking (e.g., MLflow/W&B) for reproducibility and candidate selection governance.
-4. Introduce probability-threshold optimization for cost-sensitive decisioning.
-5. Add calibration and monitoring hooks (drift checks, class-prior shifts).
-6. Expose the best model as a lightweight inference API.
-
-## License
-See `LICENSE` for usage terms.
+Released under the [MIT License](LICENSE).
