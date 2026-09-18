@@ -30,9 +30,13 @@ In credit scoring, predicting default (`bad` credit) is an asymmetric decision p
 | **SVM (RBF Kernel)** | 72.0% | 0.563 | 0.300 | 0.391 | 0.421 |
 | **AdaBoost** | 68.0% | 0.460 | 0.383 | 0.418 | 0.471 |
 | **XGBoost Classifier** | 69.5% | 0.491 | 0.467 | 0.479 | **0.543** |
-| **Tuned Random Forest + Resampling** | **74.5%** | **0.612** | **0.655** | **0.633** 🚀 | **0.610** |
+| **Tuned Random Forest + RandomUnderSampler** | **71.0%** | 0.510 | **0.833** | **0.633** | **0.612** |
 
-> **Key Achievement:** Hyperparameter-tuned Random Forest combined with SMOTE achieved a **+27.6% improvement in F1-score on high-risk applicants** (rising to **0.633**) compared to the initial logistic regression baseline.
+> > **Key result:** selecting the resampling strategy per model in cross-validation, a tuned Random
+> Forest with random undersampling raised the minority-class F1 from **0.496** (best untuned model,
+> the decision tree) to **0.633**, a **+27.6%** improvement. The gain comes from recall on risky
+> applicants (0.83 vs 0.50), traded against precision (0.51) — the right trade-off when a missed
+> default costs far more than a false alarm.
 
 ---
 
@@ -52,7 +56,7 @@ graph TD
     end
 
     subgraph Resampling ["Imbalance Handling Experiments"]
-        Pipe --> Smote["SMOTE / ADASYN / SMOTETomek / Class Weights"]
+        Pipe --> Smote["SMOTE / ADASYN / SMOTETomek / Random Undersampling / Class Weights"]
     end
 
     subgraph Modeling ["Model Selection & Optimization"]
@@ -60,7 +64,7 @@ graph TD
         Tuning --> FinalModel["Best Model: Optimized Random Forest & XGBoost"]
     end
 
-    FinalModel --> Eval["ROC-AUC Analysis, Cost-Matrix Evaluation & SFS Feature Pruning"]
+    FinalModel --> Eval["Cost-Matrix Evaluation & SFS Feature Pruning"]
 ```
 
 ---
